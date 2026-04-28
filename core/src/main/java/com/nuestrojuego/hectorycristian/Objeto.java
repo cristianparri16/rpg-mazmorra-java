@@ -6,12 +6,16 @@ public abstract class Objeto {
         private String descripcion;
         private int peso;
 
+
         public Objeto(int id, String nombre, String descripcion, int peso) {
             this.idObjeto = id;
             this.nombre = nombre;
             this.descripcion = descripcion;
             this.peso = peso;
+
         }
+
+
 
     public int getIdObjeto() {
         return idObjeto;
