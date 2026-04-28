@@ -4,6 +4,8 @@ public class Habitacion {
     public TipoHabitacion tipoHabitacion;
     private Object contenido;
     private boolean salacompletada;
+    public Habitacion norte, sur, este, oeste;
+    public boolean tieneEscaleras = false;
 
     public Habitacion(TipoHabitacion tipoHabitacion, Object contenido) {
         this.tipoHabitacion = tipoHabitacion;
