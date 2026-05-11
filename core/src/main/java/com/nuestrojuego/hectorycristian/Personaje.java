@@ -1,6 +1,7 @@
 package com.nuestrojuego.hectorycristian;
 
 public class Personaje extends Entidad {
+    private Arma armaEquipada;
     private int vidaBase;
     private int fuerza;
     private int destreza;
@@ -33,6 +34,11 @@ public class Personaje extends Entidad {
             this.experiencia = 0;
             this.puntosAtributo = 0;
             recalcularStats();
+            this.armaEquipada=null;
+    }
+    public void equiparArma(Arma arma) {
+        this.armaEquipada = arma;
+        recalcularStats();
     }
     public static Personaje getInstancia(String nombre, int vidaBase, int fuerza, int destreza, int inteligencia, int constitucion, int sabiduria, int suerte,int defensaBase){
         if (instancia==null){
@@ -135,4 +141,13 @@ public class Personaje extends Entidad {
     public int getDañoMagico() { return dañoMagico; }
     public double getEvasion() { return evasion; }
     public int getDefensaTotal() { return defensaTotal; }
+
+    public Arma getArmaEquipada() {
+        return armaEquipada;
+    }
+
+    public int getDañoDistancia() {
+        return dañoDistancia;
+    }
+
 }
