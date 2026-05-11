@@ -34,11 +34,8 @@ public class GeneradorMazmorra {
         }
 
         Habitacion habitacionFinal = todasLasDelPiso.get(todasLasDelPiso.size() - 1);
-
         habitacionFinal.tieneEscaleras = true;
-
         habitacionFinal.tipoHabitacion = (nivelPiso >= 26) ? TipoHabitacion.BOSS : TipoHabitacion.COMBATE;
-
 
         return inicio;
     }
@@ -46,7 +43,6 @@ public class GeneradorMazmorra {
     private void conectarAleatoriamente(ArrayList<Habitacion> existentes, Habitacion nueva) {
         boolean conectada = false;
         while (!conectada) {
-
             Habitacion anfitriona = existentes.get(azar.nextInt(existentes.size()));
             int puerta = azar.nextInt(4);
 
@@ -62,12 +58,12 @@ public class GeneradorMazmorra {
         }
     }
 
-
     private Habitacion crearHabitacionAleatoria(int nivel){
         int tirada = azar.nextInt(100);
-        if(tirada < 40) return new Habitacion(TipoHabitacion.COMBATE, generarEnemigo(nivel));
-        if(tirada < 80) return new Habitacion(TipoHabitacion.COFRE, generarCofre(nivel));
-        return new Habitacion(TipoHabitacion.SANTUARIO, null);
+        // Ajustamos probabilidades: 50% Combate, 50% Cofre.
+        // El Santuario ya no sale aquí para que solo haya 1 por piso (el de inicio).
+        if(tirada < 50) return new Habitacion(TipoHabitacion.COMBATE, generarEnemigo(nivel));
+        return new Habitacion(TipoHabitacion.COFRE, generarCofre(nivel));
     }
 
     private Enemigo generarEnemigo(int nivel){
