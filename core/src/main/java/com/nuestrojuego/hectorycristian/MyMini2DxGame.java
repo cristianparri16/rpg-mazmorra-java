@@ -45,13 +45,15 @@ public class MyMini2DxGame extends BasicGame {
 
         spriteEnano = new Sprite(texAbajo);
 
+
         texturaBg = new Texture(Gdx.files.internal("DungeonAssets/BackgroundTexture.jpg"));
         texturaBg.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
         texturaEnemigo = new Texture(Gdx.files.internal("DungeonAssets/Enemies/skeleton.png"));
         spriteEnemigo  = new Sprite(texturaEnemigo);
         spriteEnemigo.setSize(64, 64);
-
+        CreadorPersonaje creador = new CreadorPersonaje();
+        creador.crearPersonaje();
         nuevaMazmorra();
     }
 
