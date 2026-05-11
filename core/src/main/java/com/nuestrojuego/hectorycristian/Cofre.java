@@ -60,7 +60,12 @@ public class Cofre {
                 return new Armadura(id, nombreArmadura(rareza), "Armadura " + rareza, 8, defensa, fuerzaMin, rareza);
             case 1:
                 int daño = (int) ((5 + nivel * 3) * multiplicador);
-                return new Arma(id, nombreArma(rareza), "Arma " + rareza, 3, daño, rareza);
+                int tipoArma = azar.nextInt(2); // 0=espada, 1=arco
+                if (tipoArma == 0) {
+                    return new Arma(id, nombreArma(rareza), "Arma " + rareza, 3, daño, rareza);
+                } else {
+                    return new ArmaADistancia(id, nombreArcoDistancia(rareza), "Arco " + rareza, 2, daño, rareza);
+                }
             case 2:
                 int curacion = 20 + (nivel * 5);
                 return new Pocion(id, "Poción de vida", "Restaura " + curacion + " de vida", 1, curacion);
@@ -108,6 +113,22 @@ public class Cofre {
                 return "Armadura sombría";
             case LEGENDARIO:
                 return "Armadura celestial";
+        }
+        return null;
+
+    }
+    private String nombreArcoDistancia(Rareza rareza) {
+        switch (rareza) {
+            case COMUN:
+                return "Arco de madera";
+            case POCO_COMUN:
+                return "Arco de caza";
+            case RARO:
+                return "Arco élfico";
+            case EPICO:
+                return "Arco del abismo";
+            case LEGENDARIO:
+                return "Arco del destino";
         }
         return null;
     }
