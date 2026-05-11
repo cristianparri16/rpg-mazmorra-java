@@ -3,8 +3,8 @@ package com.nuestrojuego.hectorycristian;
 public class ArmaADistancia extends Arma {
     private TipoMunicion tipoMunicion;
 
-    public ArmaADistancia(int id, String nombre, String descripcion, int peso,int dañoArma,TipoMunicion municion) {
-        super(id,nombre,descripcion,peso,dañoArma);
+    public ArmaADistancia(int id, String nombre, String descripcion, int peso,int dañoArma,Rareza rareza,TipoMunicion municion) {
+        super(id,nombre,descripcion,peso,dañoArma,rareza);
         this.tipoMunicion = municion;
     }
 
