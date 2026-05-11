@@ -82,8 +82,10 @@ public class GeneradorMazmorra {
         return new Enemigo(dañoBoss, nivel * 2, "Boss Prueba", vidaBoss, nivel);
     }
 
-    private Objeto generarCofre(int nivel){ return null; }
-
+    private Cofre generarCofre(int nivel) {
+        int suerte = Personaje.getInstancia().getSuerte();
+        return new Cofre(nivel, suerte, azar);
+    }
     public ArrayList<Habitacion> getEntradasPisos() {
         return entradasPisos;
     }

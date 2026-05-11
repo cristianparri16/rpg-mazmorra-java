@@ -40,6 +40,11 @@ public class Personaje extends Entidad {
         }
         return instancia;
     }
+    public static Personaje getInstancia() {
+        if (instancia == null) throw new IllegalStateException("El personaje no ha sido creado todavía");
+        return instancia;
+    }
+
 
     private void recalcularStats(){
         super.vidaMaxima = this.vidaBase + (this.constitucion*5);

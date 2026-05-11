@@ -1,4 +1,4 @@
 package com.nuestrojuego.hectorycristian;
 
-public enum Rareza {COMUN, POCO_COMUN, RARO, EPICO, LEGENDARIO
+public enum Rareza {NINGUNA,COMUN, POCO_COMUN, RARO, EPICO, LEGENDARIO
 }
