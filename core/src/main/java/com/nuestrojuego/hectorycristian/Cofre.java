@@ -14,121 +14,77 @@ public class Cofre {
     private Rareza determinarRareza(int suerte, Random azar) {
         int bonusSuerte = suerte * 2;
         int tirada = azar.nextInt(100);
-        if (tirada < Math.min(5 + bonusSuerte / 4, 25)) {
-            return Rareza.LEGENDARIO;
-        }
-        if (tirada < Math.min(15 + bonusSuerte / 3, 40)) {
-            return Rareza.EPICO;
-        }
-        if (tirada < Math.min(35 + bonusSuerte / 2, 60)) {
-            return Rareza.RARO;
-        }
-        if (tirada < 65 + bonusSuerte) {
-            return Rareza.POCO_COMUN;
-        }
+        if (tirada < Math.min(5 + bonusSuerte / 4, 25)) return Rareza.LEGENDARIO;
+        if (tirada < Math.min(15 + bonusSuerte / 3, 40)) return Rareza.EPICO;
+        if (tirada < Math.min(35 + bonusSuerte / 2, 60)) return Rareza.RARO;
+        if (tirada < 65 + bonusSuerte) return Rareza.POCO_COMUN;
         return Rareza.COMUN;
     }
 
     private Objeto generarObjetoPorRareza(int nivel, Rareza rareza, Random azar) {
-        double multiplicador = 0;
-        switch (rareza) {
-            case COMUN:
-                multiplicador = 1.0;
-                break;
-            case POCO_COMUN:
-                multiplicador = 1.3;
-                break;
-            case RARO:
-                multiplicador = 1.6;
-                break;
-            case EPICO:
-                multiplicador = 2.0;
-                break;
-            case LEGENDARIO:
-                multiplicador = 2.5;
-                break;
-        }
-
+        DatosJuego datos = DatosJuego.getInstancia();
         int id = contadorIds++;
-        int tipoObjeto = azar.nextInt(4); // 0=armadura, 1=arma/arco, 2=pocion, 3=flechas
+        int tipoObjeto = azar.nextInt(5); // 0=espada, 1=arco, 2=baston, 3=pocion, 4=flechas
 
         switch (tipoObjeto) {
             case 0:
-                int defensa = (int) ((3 + nivel * 2) * multiplicador);
-                int fuerzaMin = Math.max(0, nivel - 2);
-                return new Armadura(id, nombreArmadura(rareza), "Armadura " + rareza, 8, defensa, fuerzaMin, rareza);
+                return generarEspada(id, nivel, rareza, datos, azar);
             case 1:
-                int daño = (int) ((5 + nivel * 3) * multiplicador);
-                int tipoArma = azar.nextInt(2); // 0=espada, 1=arco
-                if (tipoArma == 0) {
-                    return new Arma(id, nombreEspada(rareza), "Espada " + rareza, 3, daño, rareza);
-                } else {
-                    return new ArmaADistancia(id, nombreArco(rareza), "Arco " + rareza, 2, daño, rareza);
-                }
+                return generarArco(id, nivel, rareza, datos, azar);
             case 2:
-                int curacion = 20 + (nivel * 5);
-                return new Pocion(id, "Poción de vida", "Restaura " + curacion + " de vida", 1, curacion);
+                return generarBaston(id, nivel, rareza, datos, azar);
             case 3:
+                int curacion = 20 + (nivel * 5);
+                int tipoPocion = azar.nextInt(2);
+                if (tipoPocion == 0) {
+                    return new Pocion(id, "Poción de vida", "Restaura " + curacion + " de vida", 1, curacion, TipoPocion.SALUD);
+                } else {
+                    return new Pocion(id, "Poción de mana", "Restaura " + curacion + " de mana", 1, curacion, TipoPocion.MANA);
+                }
+            case 4:
                 int dañoFlecha = 3 + nivel;
                 return new Flechas(id, "Flechas", "Flechas del piso " + nivel, 1, dañoFlecha);
         }
-
         return null;
     }
 
-    public Objeto getObjeto() {
-        return objeto;
-    }
-
-    public void setObjeto(Objeto objeto) {
-        this.objeto = objeto;
-    }
-
-    private String nombreEspada(Rareza rareza) {
-        switch (rareza) {
-            case COMUN:
-                return "Espada oxidada";
-            case POCO_COMUN:
-                return "Espada de acero";
-            case RARO:
-                return "Espada élfica";
-            case EPICO:
-                return "Espada del abismo";
-            case LEGENDARIO:
-                return "Espada del destino";
+    private Espada generarEspada(int id, int nivel, Rareza rareza, DatosJuego datos, Random azar) {
+        for (int i = 0; i < datos.espadas.size(); i++) {
+            if (datos.nombresEspadas.get(i)[1].equals(rareza.name())) {
+                int[] stats = datos.espadas.get(i);
+                String nombre = datos.nombresEspadas.get(i)[0];
+                int daño = stats[0] + (stats[1] * nivel);
+                return new Espada(id, nombre, "Espada " + rareza, stats[2], daño, rareza);
+            }
         }
-        return null;
+        return new Espada(id, "Espada básica", "Sin datos", 3, 5 + nivel, Rareza.COMUN);
     }
 
-    private String nombreArco(Rareza rareza) {
-        switch (rareza) {
-            case COMUN:
-                return "Arco de madera";
-            case POCO_COMUN:
-                return "Arco de tejo";
-            case RARO:
-                return "Arco élfico";
-            case EPICO:
-                return "Arco del abismo";
-            case LEGENDARIO:
-                return "Arco del destino";
+    private ArmaADistancia generarArco(int id, int nivel, Rareza rareza, DatosJuego datos, Random azar) {
+        for (int i = 0; i < datos.arcos.size(); i++) {
+            if (datos.nombresArcos.get(i)[1].equals(rareza.name())) {
+                int[] stats = datos.arcos.get(i);
+                String nombre = datos.nombresArcos.get(i)[0];
+                int daño = stats[0] + (stats[1] * nivel);
+                return new ArmaADistancia(id, nombre, "Arco " + rareza, stats[2], daño, rareza);
+            }
         }
-        return null;
+        return new ArmaADistancia(id, "Arco básico", "Sin datos", 2, 5 + nivel, Rareza.COMUN);
     }
 
-    private String nombreArmadura(Rareza rareza) {
-        switch (rareza) {
-            case COMUN:
-                return "Cota de cuero";
-            case POCO_COMUN:
-                return "Cota de malla";
-            case RARO:
-                return "Armadura de placas";
-            case EPICO:
-                return "Armadura sombría";
-            case LEGENDARIO:
-                return "Armadura celestial";
+    private Baston generarBaston(int id, int nivel, Rareza rareza, DatosJuego datos, Random azar) {
+        for (int i = 0; i < datos.bastones.size(); i++) {
+            if (datos.nombresBastones.get(i)[1].equals(rareza.name())) {
+                int[] stats = datos.bastones.get(i);
+                String nombre = datos.nombresBastones.get(i)[0];
+                int daño = stats[0] + (stats[1] * nivel);
+                int manaBonus = stats[2];
+                return new Baston(id, nombre, "Bastón " + rareza, 2, daño, manaBonus, rareza);
+            }
         }
-        return null;
+        return new Baston(id, "Bastón básico", "Sin datos", 2, 5 + nivel, 10, Rareza.COMUN);
     }
+
+    public Objeto getObjeto() { return objeto; }
+    public void setObjeto(Objeto objeto) { this.objeto = objeto; }
 }

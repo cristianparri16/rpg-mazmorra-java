@@ -1,11 +1,11 @@
 package com.nuestrojuego.hectorycristian;
 
 public abstract class Objeto {
-        private int idObjeto;
-        private String nombre;
-        private String descripcion;
-        private int peso;
-        private Rareza rareza;
+    private int idObjeto;
+    private String nombre;
+    private String descripcion;
+    private int peso;
+    private Rareza rareza;
 
     public Objeto(int id, String nombre, String descripcion, int peso, Rareza rareza) {
         this.idObjeto = id;
@@ -23,20 +23,21 @@ public abstract class Objeto {
         this.rareza = Rareza.NINGUNA;
     }
 
+    public int getIdObjeto() { return idObjeto; }
+    public String getNombre() { return nombre; }
+    public String getDescripcion() { return descripcion; }
+    public int getPeso() { return peso; }
+    public Rareza getRareza() { return rareza; }
 
-
-    public int getIdObjeto() {
-        return idObjeto;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Objeto)) return false;
+        return this.idObjeto == ((Objeto) o).idObjeto;
     }
 
-    public String getNombre() {
-        return nombre;
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(idObjeto);
     }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public int getPeso() {return peso;}
 }
-

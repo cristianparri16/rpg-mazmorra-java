@@ -1,4 +1,5 @@
 package com.nuestrojuego.hectorycristian;
+
 public class ArmaADistancia extends Arma {
     private Flechas flechas;
 
@@ -11,6 +12,3 @@ public class ArmaADistancia extends Arma {
     public void setFlechas(Flechas flechas) { this.flechas = flechas; }
     public boolean tieneFlechas() { return flechas != null; }
 }
-
-
-

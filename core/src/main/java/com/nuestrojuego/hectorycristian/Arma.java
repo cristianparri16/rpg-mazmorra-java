@@ -1,6 +1,6 @@
 package com.nuestrojuego.hectorycristian;
 
-public class Arma extends Objeto {
+public abstract class Arma extends Objeto {
     private int dañoArma;
 
     public Arma(int id, String nombre, String descripcion, int peso, int dañoArma, Rareza rareza) {
@@ -8,12 +8,6 @@ public class Arma extends Objeto {
         this.dañoArma = dañoArma;
     }
 
-    public int getDañoArma() {
-        return dañoArma;
-    }
+    public int getDañoArma() { return dañoArma; }
+    public void setDañoArma(int dañoArma) { this.dañoArma = dañoArma; }
 }
-
-
-
-
-

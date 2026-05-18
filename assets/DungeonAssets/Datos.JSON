@@ -1,0 +1,62 @@
+{
+  "enemigos": [
+    {"id": 1, "nombre": "Esqueleto", "tipo": "BASICO", "vidaBase": 50, "dañoBase": 8, "defensaBase": 2, "vidaPorNivel": 8, "dañoPorNivel": 2, "defensaPorNivel": 1},
+    {"id": 2, "nombre": "Goblin", "tipo": "BASICO", "vidaBase": 40, "dañoBase": 10, "defensaBase": 1, "vidaPorNivel": 6, "dañoPorNivel": 2, "defensaPorNivel": 1},
+    {"id": 3, "nombre": "Orco", "tipo": "BASICO", "vidaBase": 80, "dañoBase": 14, "defensaBase": 5, "vidaPorNivel": 10, "dañoPorNivel": 3, "defensaPorNivel": 1},
+    {"id": 4, "nombre": "Troll", "tipo": "ELITE", "vidaBase": 120, "dañoBase": 18, "defensaBase": 8, "vidaPorNivel": 15, "dañoPorNivel": 4, "defensaPorNivel": 2},
+    {"id": 5, "nombre": "Vampiro", "tipo": "ELITE", "vidaBase": 100, "dañoBase": 16, "defensaBase": 6, "vidaPorNivel": 12, "dañoPorNivel": 3, "defensaPorNivel": 2},
+    {"id": 6, "nombre": "Hombre Lobo", "tipo": "ELITE", "vidaBase": 110, "dañoBase": 20, "defensaBase": 4, "vidaPorNivel": 14, "dañoPorNivel": 4, "defensaPorNivel": 1},
+    {"id": 7, "nombre": "Dragón Joven", "tipo": "BOSS", "vidaBase": 200, "dañoBase": 25, "defensaBase": 12, "vidaPorNivel": 25, "dañoPorNivel": 5, "defensaPorNivel": 3},
+    {"id": 8, "nombre": "Nigromante", "tipo": "BOSS", "vidaBase": 150, "dañoBase": 22, "defensaBase": 8, "vidaPorNivel": 20, "dañoPorNivel": 4, "defensaPorNivel": 2},
+    {"id": 9, "nombre": "Demonio", "tipo": "BOSS", "vidaBase": 220, "dañoBase": 28, "defensaBase": 15, "vidaPorNivel": 28, "dañoPorNivel": 6, "defensaPorNivel": 3},
+    {"id": 10, "nombre": "Lich", "tipo": "BOSS", "vidaBase": 180, "dañoBase": 24, "defensaBase": 10, "vidaPorNivel": 22, "dañoPorNivel": 5, "defensaPorNivel": 2}
+  ],
+  "espadas": [
+    {"id": 1, "nombre": "Espada oxidada", "rareza": "COMUN", "dañoBase": 8, "dañoPorNivel": 2, "peso": 3},
+    {"id": 2, "nombre": "Espada de acero", "rareza": "POCO_COMUN", "dañoBase": 14, "dañoPorNivel": 3, "peso": 3},
+    {"id": 3, "nombre": "Mandoble", "rareza": "POCO_COMUN", "dañoBase": 18, "dañoPorNivel": 3, "peso": 5},
+    {"id": 4, "nombre": "Sable de duelo", "rareza": "POCO_COMUN", "dañoBase": 13, "dañoPorNivel": 3, "peso": 2},
+    {"id": 5, "nombre": "Espada élfica", "rareza": "RARO", "dañoBase": 22, "dañoPorNivel": 4, "peso": 2},
+    {"id": 6, "nombre": "Hoja de plata", "rareza": "RARO", "dañoBase": 20, "dañoPorNivel": 4, "peso": 3},
+    {"id": 7, "nombre": "Espadón rúnico", "rareza": "RARO", "dañoBase": 25, "dañoPorNivel": 5, "peso": 5},
+    {"id": 8, "nombre": "Espada del abismo", "rareza": "EPICO", "dañoBase": 35, "dañoPorNivel": 6, "peso": 4},
+    {"id": 9, "nombre": "Filo maldito", "rareza": "EPICO", "dañoBase": 32, "dañoPorNivel": 6, "peso": 3},
+    {"id": 10, "nombre": "Espada del destino", "rareza": "LEGENDARIO", "dañoBase": 50, "dañoPorNivel": 8, "peso": 3}
+  ],
+  "arcos": [
+    {"id": 1, "nombre": "Arco de madera", "rareza": "COMUN", "dañoBase": 7, "dañoPorNivel": 2, "peso": 2},
+    {"id": 2, "nombre": "Arco de caza", "rareza": "COMUN", "dañoBase": 9, "dañoPorNivel": 2, "peso": 2},
+    {"id": 3, "nombre": "Arco de tejo", "rareza": "POCO_COMUN", "dañoBase": 13, "dañoPorNivel": 3, "peso": 2},
+    {"id": 4, "nombre": "Arco compuesto", "rareza": "POCO_COMUN", "dañoBase": 15, "dañoPorNivel": 3, "peso": 3},
+    {"id": 5, "nombre": "Arco élfico", "rareza": "RARO", "dañoBase": 20, "dañoPorNivel": 4, "peso": 2},
+    {"id": 6, "nombre": "Arco de hueso", "rareza": "RARO", "dañoBase": 18, "dañoPorNivel": 4, "peso": 2},
+    {"id": 7, "nombre": "Arco rúnico", "rareza": "RARO", "dañoBase": 22, "dañoPorNivel": 5, "peso": 2},
+    {"id": 8, "nombre": "Arco del abismo", "rareza": "EPICO", "dañoBase": 32, "dañoPorNivel": 6, "peso": 2},
+    {"id": 9, "nombre": "Arco de sombras", "rareza": "EPICO", "dañoBase": 30, "dañoPorNivel": 6, "peso": 2},
+    {"id": 10, "nombre": "Arco del destino", "rareza": "LEGENDARIO", "dañoBase": 45, "dañoPorNivel": 8, "peso": 2}
+  ],
+  "magias": [
+    {"id": 1, "nombre": "Bola de fuego", "rareza": "COMUN", "dañoBase": 10, "dañoPorNivel": 2, "manaCost": 10},
+    {"id": 2, "nombre": "Rayo de hielo", "rareza": "COMUN", "dañoBase": 9, "dañoPorNivel": 2, "manaCost": 8},
+    {"id": 3, "nombre": "Descarga arcana", "rareza": "POCO_COMUN", "dañoBase": 15, "dañoPorNivel": 3, "manaCost": 15},
+    {"id": 4, "nombre": "Mano ardiente", "rareza": "POCO_COMUN", "dañoBase": 14, "dañoPorNivel": 3, "manaCost": 12},
+    {"id": 5, "nombre": "Tormenta eléctrica", "rareza": "RARO", "dañoBase": 22, "dañoPorNivel": 4, "manaCost": 20},
+    {"id": 6, "nombre": "Nova de escarcha", "rareza": "RARO", "dañoBase": 20, "dañoPorNivel": 4, "manaCost": 18},
+    {"id": 7, "nombre": "Lluvia de meteoritos", "rareza": "RARO", "dañoBase": 25, "dañoPorNivel": 5, "manaCost": 25},
+    {"id": 8, "nombre": "Vacío arcano", "rareza": "EPICO", "dañoBase": 35, "dañoPorNivel": 6, "manaCost": 35},
+    {"id": 9, "nombre": "Toque de la muerte", "rareza": "EPICO", "dañoBase": 32, "dañoPorNivel": 6, "manaCost": 30},
+    {"id": 10, "nombre": "Apocalipsis", "rareza": "LEGENDARIO", "dañoBase": 55, "dañoPorNivel": 8, "manaCost": 50}
+  ],
+  "bastones": [
+    {"id":1,"nombre":"Bastón de roble","rareza":"COMUN","dañoBase":8,"dañoPorNivel":2,"manaBonus":5},
+    {"id":2,"nombre":"Bastón del aprendiz","rareza":"COMUN","dañoBase":10,"dañoPorNivel":2,"manaBonus":8},
+    {"id":3,"nombre":"Bastón de ceniza","rareza":"POCO_COMUN","dañoBase":14,"dañoPorNivel":3,"manaBonus":12},
+    {"id":4,"nombre":"Bastón rúnico","rareza":"POCO_COMUN","dañoBase":16,"dañoPorNivel":3,"manaBonus":15},
+    {"id":5,"nombre":"Bastón de cristal","rareza":"RARO","dañoBase":22,"dañoPorNivel":4,"manaBonus":20},
+    {"id":6,"nombre":"Bastón de hielo eterno","rareza":"RARO","dañoBase":20,"dañoPorNivel":4,"manaBonus":18},
+    {"id":7,"nombre":"Bastón del archimago","rareza":"RARO","dañoBase":25,"dañoPorNivel":5,"manaBonus":25},
+    {"id":8,"nombre":"Bastón del vacío","rareza":"EPICO","dañoBase":35,"dañoPorNivel":6,"manaBonus":35},
+    {"id":9,"nombre":"Bastón de almas","rareza":"EPICO","dañoBase":32,"dañoPorNivel":6,"manaBonus":30},
+    {"id":10,"nombre":"Bastón del destino","rareza":"LEGENDARIO","dañoBase":50,"dañoPorNivel":8,"manaBonus":50}
+  ]
+}

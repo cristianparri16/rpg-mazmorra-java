@@ -50,6 +50,9 @@ public class Personaje extends Entidad {
         if (instancia == null) throw new IllegalStateException("El personaje no ha sido creado todavía");
         return instancia;
     }
+    public void gastarMana(int cantidad) {
+        this.mana = Math.max(0, this.mana - cantidad);
+    }
 
 
     private void recalcularStats(){
