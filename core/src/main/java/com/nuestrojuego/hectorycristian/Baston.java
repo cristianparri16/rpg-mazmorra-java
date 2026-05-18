@@ -9,4 +9,5 @@ public class Baston extends Arma {
     }
 
     public int getManaBonus() { return manaBonus; }
+    public int getDañoMagico() {return getDañoArma();}
 }

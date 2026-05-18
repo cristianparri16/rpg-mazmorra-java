@@ -17,6 +17,9 @@ public class MyMini2DxGame extends BasicGame {
 
     public static final String GAME_IDENTIFIER = "com.nuestrojuego.hectorycristian";
 
+    private static final float ANCHO_VIRTUAL = 800f;
+    private static final float ALTO_VIRTUAL  = 600f;
+
     private static final float VELOCIDAD     = 180f;
     private static final float VEL_ENEMIGO   = 100f;
     private static final float SEMIPUERTA    = 40f;
@@ -24,6 +27,7 @@ public class MyMini2DxGame extends BasicGame {
 
     private boolean seleccionandoPersonaje = true;
     private boolean mostrandoInventario = false;
+    private boolean mostrandoStats = false;
     private int tipoClase = 1;
 
     private Sprite cofre;
@@ -44,8 +48,6 @@ public class MyMini2DxGame extends BasicGame {
     private final Random random = new Random();
 
     private FontGlyphLayout layoutTexto;
-
-    // Variables para la navegación del inventario
     private int indiceSeleccionado = 0;
     private Objeto objetoEnFoco = null;
 
@@ -54,24 +56,32 @@ public class MyMini2DxGame extends BasicGame {
         DatosJuego.getInstancia().cargar();
 
         texDerecha = new Texture(Gdx.files.internal("DungeonAssets/Players/derecha.png"));
+        texDerecha.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
         texArriba  = new Texture(Gdx.files.internal("DungeonAssets/Players/arriba.png"));
+        texArriba.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
         texAbajo   = new Texture(Gdx.files.internal("DungeonAssets/Players/abajo.png"));
+        texAbajo.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
         spriteEnano = new Sprite(texAbajo);
 
         texturaBg = new Texture(Gdx.files.internal("DungeonAssets/BackgroundTexture.jpg"));
+        texturaBg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         texturaBg.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
         Texture texturaEnemigo = new Texture(Gdx.files.internal("DungeonAssets/Enemies/skeleton.png"));
+        texturaEnemigo.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         spriteEnemigo  = new Sprite(texturaEnemigo);
         spriteEnemigo.setSize(64, 64);
 
         Texture texturaCofre = new Texture(Gdx.files.internal("cofre.png"));
-        texturaCofre.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        texturaCofre.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         cofre = new Sprite(texturaCofre);
         cofre.setSize(44, 44);
 
         Texture texturaEscalera = new Texture(Gdx.files.internal("escalera.png"));
-        texturaEscalera.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        texturaEscalera.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         spriteEscalera = new Sprite(texturaEscalera);
         spriteEscalera.setSize(56, 56);
     }
@@ -100,21 +110,19 @@ public class MyMini2DxGame extends BasicGame {
         }
 
         salaActual = dungeon.getEntradasPisos().get(pisoActual);
-        xEnano = Gdx.graphics.getWidth() / 2f;
-        yEnano = Gdx.graphics.getHeight() / 2f;
+        xEnano = ANCHO_VIRTUAL / 2f;
+        yEnano = ALTO_VIRTUAL / 2f;
 
-        xEscalera = 120f + random.nextFloat() * (Gdx.graphics.getWidth() - 64f - 240f);
-        yEscalera = 120f + random.nextFloat() * (Gdx.graphics.getHeight() - 64f - 240f);
+        xEscalera = 120f + random.nextFloat() * (ANCHO_VIRTUAL - 64f - 240f);
+        yEscalera = 120f + random.nextFloat() * (ALTO_VIRTUAL - 64f - 240f);
 
         colocarEnemigo();
     }
 
     private void colocarEnemigo() {
-        float ancho = Gdx.graphics.getWidth();
-        float alto  = Gdx.graphics.getHeight();
         float m = 100f;
-        xEnemigo = m + random.nextFloat() * (ancho - 64f - m * 2f);
-        yEnemigo = m + random.nextFloat() * (alto  - 64f - m * 2f);
+        xEnemigo = m + random.nextFloat() * (ANCHO_VIRTUAL - 64f - m * 2f);
+        yEnemigo = m + random.nextFloat() * (ALTO_VIRTUAL - 64f - m * 2f);
         enemigoVivo = true;
     }
 
@@ -130,22 +138,28 @@ public class MyMini2DxGame extends BasicGame {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
             mostrandoInventario = !mostrandoInventario;
+            mostrandoStats = false;
             indiceSeleccionado = 0;
             objetoEnFoco = null;
         }
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.O)) {
+            mostrandoStats = !mostrandoStats;
+            mostrandoInventario = false;
+        }
+
         if (mostrandoInventario) {
             Inventario inv = Inventario.getInstancia(Personaje.getInstancia());
-            ArrayList<Objeto> listaItems = new ArrayList<>(inv.getObjetos().keySet());
+            ArrayList<Objeto> items = new ArrayList<>(inv.getObjetos().keySet());
 
-            if (!listaItems.isEmpty()) {
+            if (!items.isEmpty()) {
                 if (Gdx.input.isKeyJustPressed(Input.Keys.W) || Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
-                    indiceSeleccionado = (indiceSeleccionado - 1 + listaItems.size()) % listaItems.size();
+                    indiceSeleccionado = (indiceSeleccionado - 1 + items.size()) % items.size();
                 }
                 if (Gdx.input.isKeyJustPressed(Input.Keys.S) || Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
-                    indiceSeleccionado = (indiceSeleccionado + 1) % listaItems.size();
+                    indiceSeleccionado = (indiceSeleccionado + 1) % items.size();
                 }
-                objetoEnFoco = listaItems.get(indiceSeleccionado);
+                objetoEnFoco = items.get(indiceSeleccionado);
 
                 if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
                     if (objetoEnFoco instanceof Arma || objetoEnFoco instanceof Armadura) {
@@ -163,8 +177,8 @@ public class MyMini2DxGame extends BasicGame {
             return;
         }
 
-        float ancho = Gdx.graphics.getWidth();
-        float alto  = Gdx.graphics.getHeight();
+        if (mostrandoStats) return;
+
         float sw = spriteEnano.getWidth();
         float sh = spriteEnano.getHeight();
 
@@ -184,18 +198,18 @@ public class MyMini2DxGame extends BasicGame {
             spriteEnano.setFlip(false, false);
         }
 
-        float puertaMinX = ancho / 2f - SEMIPUERTA;
-        float puertaMaxX = ancho / 2f + SEMIPUERTA;
-        float puertaMinY = alto / 2f - SEMIPUERTA;
-        float puertaMaxY = alto / 2f + SEMIPUERTA;
+        float puertaMinX = ANCHO_VIRTUAL / 2f - SEMIPUERTA;
+        float puertaMaxX = ANCHO_VIRTUAL / 2f + SEMIPUERTA;
+        float puertaMinY = ALTO_VIRTUAL / 2f - SEMIPUERTA;
+        float puertaMaxY = ALTO_VIRTUAL / 2f + SEMIPUERTA;
 
         boolean cabePuertaX = (xEnano >= puertaMinX) && (xEnano + sw <= puertaMaxX);
         boolean cabePuertaY = (yEnano >= puertaMinY) && (yEnano + sh <= puertaMaxY);
 
         if (yEnano < 0 && (salaActual.norte == null || !cabePuertaX)) yEnano = 0;
-        if (yEnano + sh > alto && (salaActual.sur == null || !cabePuertaX)) yEnano = alto - sh;
+        if (yEnano + sh > ALTO_VIRTUAL && (salaActual.sur == null || !cabePuertaX)) yEnano = ALTO_VIRTUAL - sh;
         if (xEnano < 0 && (salaActual.oeste == null || !cabePuertaY)) xEnano = 0;
-        if (xEnano + sw > ancho && (salaActual.este == null || !cabePuertaY)) xEnano = ancho - sw;
+        if (xEnano + sw > ANCHO_VIRTUAL && (salaActual.este == null || !cabePuertaY)) xEnano = ANCHO_VIRTUAL - sw;
 
         if (salaActual.getTipoHabitacion() == TipoHabitacion.COMBATE && enemigoVivo) {
             float diffX = xEnano - xEnemigo;
@@ -210,8 +224,8 @@ public class MyMini2DxGame extends BasicGame {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             if (salaActual.getTipoHabitacion() == TipoHabitacion.COFRE && salaActual.getContenido() != null) {
-                float distanciaCofreX = Math.abs(xEnano - (ancho / 2f - 22f));
-                float distanciaCofreY = Math.abs(yEnano - (alto / 2f - 22f));
+                float distanciaCofreX = Math.abs(xEnano - (ANCHO_VIRTUAL / 2f - 22f));
+                float distanciaCofreY = Math.abs(yEnano - (ALTO_VIRTUAL / 2f - 22f));
                 if (distanciaCofreX < 60 && distanciaCofreY < 60) {
                     Cofre mapaCofre = (Cofre) salaActual.getContenido();
                     if (mapaCofre.getObjeto() != null) {
@@ -235,10 +249,10 @@ public class MyMini2DxGame extends BasicGame {
         }
 
         Habitacion sig = null;
-        if (xEnano + sw < -2) { sig = salaActual.oeste; xEnano = ancho - sw - 8; }
-        else if (xEnano > ancho + 2) { sig = salaActual.este; xEnano = 8; }
-        else if (yEnano + sh < -2) { sig = salaActual.norte; yEnano = alto - sh - 8; }
-        else if (yEnano > alto + 2) { sig = salaActual.sur; yEnano = 8; }
+        if (xEnano + sw < -2) { sig = salaActual.oeste; xEnano = ANCHO_VIRTUAL - sw - 8; }
+        else if (xEnano > ANCHO_VIRTUAL + 2) { sig = salaActual.este; xEnano = 8; }
+        else if (yEnano + sh < -2) { sig = salaActual.norte; yEnano = ALTO_VIRTUAL - sh - 8; }
+        else if (yEnano > ALTO_VIRTUAL + 2) { sig = salaActual.sur; yEnano = 8; }
 
         if (sig != null) {
             salaActual = sig;
@@ -251,26 +265,87 @@ public class MyMini2DxGame extends BasicGame {
 
     @Override
     public void render(Graphics g) {
-        float ancho = g.getWindowWidth();
-        float alto  = g.getWindowHeight();
+        float nativoW = g.getWindowWidth();
+        float nativoH = g.getWindowHeight();
 
         if (layoutTexto == null) {
             layoutTexto = g.getFont().newGlyphLayout();
         }
 
+        // === ESCALADO INTERNO 1: RENDER DE LA MAZMORRA (MUNDO DE JUEGO) ===
+        g.scale(nativoW / ANCHO_VIRTUAL, nativoH / ALTO_VIRTUAL);
+
+        if (!seleccionandoPersonaje && !mostrandoStats && !mostrandoInventario) {
+            g.drawTexture(texturaBg, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+
+            g.setColor(Color.YELLOW);
+            if (salaActual.norte != null) g.fillRect(ANCHO_VIRTUAL/2f - SEMIPUERTA, 0, SEMIPUERTA*2, GROSOR_PUERTA);
+            if (salaActual.sur != null) g.fillRect(ANCHO_VIRTUAL/2f - SEMIPUERTA, ALTO_VIRTUAL - GROSOR_PUERTA, SEMIPUERTA*2, GROSOR_PUERTA);
+            if (salaActual.este != null) g.fillRect(ANCHO_VIRTUAL - GROSOR_PUERTA, ALTO_VIRTUAL/2f - SEMIPUERTA, GROSOR_PUERTA, SEMIPUERTA*2);
+            if (salaActual.oeste != null) g.fillRect(0, ALTO_VIRTUAL/2f - SEMIPUERTA, GROSOR_PUERTA, SEMIPUERTA*2);
+
+            if (salaActual.getTipoHabitacion() == TipoHabitacion.COMBATE && enemigoVivo) {
+                g.drawSprite(spriteEnemigo, xEnemigo, yEnemigo);
+            }
+            if (salaActual.getTipoHabitacion() == TipoHabitacion.COFRE && salaActual.getContenido() != null) {
+                g.drawSprite(cofre, ANCHO_VIRTUAL / 2f - 22f, ALTO_VIRTUAL / 2f - 22f);
+            }
+
+            // --- ARREGLADO: El sprite de la escalera se dibuja aquí en coordenadas virtuales ---
+            if (salaActual.tieneEscaleras && spriteEscalera != null) {
+                g.drawSprite(spriteEscalera, xEscalera, yEscalera);
+            }
+            g.drawSprite(spriteEnano, xEnano, yEnano);
+        }
+
+        // === ESCALADO INTERNO 2: RESTAURAMOS RESOLUCIÓN NATIVA PARA MENÚS 1:1 SÚPER NÍTIDOS ===
+        g.scale(ANCHO_VIRTUAL / nativoW, ALTO_VIRTUAL / nativoH);
+
+        float ratioX = nativoW / ANCHO_VIRTUAL;
+        float ratioY = nativoH / ALTO_VIRTUAL;
+
+        if (!seleccionandoPersonaje && !mostrandoStats && !mostrandoInventario) {
+            if (salaActual.getTipoHabitacion() == TipoHabitacion.COFRE && salaActual.getContenido() != null) {
+                float distCofre = (float) Math.sqrt(Math.pow(xEnano - (ANCHO_VIRTUAL / 2f - 22f), 2) + Math.pow(yEnano - (ALTO_VIRTUAL / 2f - 22f), 2));
+                if (distCofre < 60) {
+                    layoutTexto.setText("[E] INTERACTUAR");
+                    float fX = (ANCHO_VIRTUAL / 2f) * ratioX;
+                    float fY = (ALTO_VIRTUAL / 2f - 35f) * ratioY;
+                    g.setColor(new Color(0f, 0f, 0f, 0.8f));
+                    g.fillRect(fX - (layoutTexto.getWidth() / 2f) - 6, fY - 2, layoutTexto.getWidth() + 12, 18);
+                    g.setColor(Color.CYAN); g.drawRect(fX - (layoutTexto.getWidth() / 2f) - 6, fY - 2, layoutTexto.getWidth() + 12, 18);
+                    g.drawString("[E] INTERACTUAR", fX - (layoutTexto.getWidth() / 2f), fY);
+                }
+            }
+
+            if (salaActual.tieneEscaleras && spriteEscalera != null) {
+                float distEsc = (float) Math.sqrt(Math.pow(xEnano - xEscalera, 2) + Math.pow(yEnano - yEscalera, 2));
+                if (distEsc < 60) {
+                    layoutTexto.setText("[E] SUBIR PISO");
+                    float fX = (xEscalera + 28f) * ratioX;
+                    float fY = (yEscalera - 15f) * ratioY;
+                    g.setColor(new Color(0f, 0f, 0f, 0.8f));
+                    g.fillRect(fX - (layoutTexto.getWidth() / 2f) - 6, fY - 2, layoutTexto.getWidth() + 12, 18);
+                    g.setColor(Color.GREEN); g.drawRect(fX - (layoutTexto.getWidth() / 2f) - 6, fY - 2, layoutTexto.getWidth() + 12, 18);
+                    g.drawString("[E] SUBIR PISO", fX - (layoutTexto.getWidth() / 2f), fY);
+                }
+            }
+        }
+
+        // --- MENU SELECCION DE PERSONAJE NATIVO PROPORCIONAL ---
         if (seleccionandoPersonaje) {
-            g.drawTexture(texturaBg, 0f, 0f, ancho, alto);
+            g.drawTexture(texturaBg, 0f, 0f, nativoW, nativoH);
             g.setColor(new Color(0f, 0f, 0f, 0.75f));
-            g.fillRect(0f, 0f, ancho, alto);
+            g.fillRect(0f, 0f, nativoW, nativoH);
 
             g.setColor(Color.DARK_GRAY);
-            g.fillRect(50, 40, ancho - 100, 60);
+            g.fillRect(50, 40, nativoW - 100, 60);
             g.setColor(Color.GOLD);
-            g.drawRect(50, 40, ancho - 100, 60);
-            g.drawString("SELECCIONA TU CLASE (Pulsa el numero)", 75, 62);
+            g.drawRect(50, 40, nativoW - 100, 60);
+            g.drawString("SELECCIONA TU CLASE (Pulsa el numero)", 75, 75);
 
-            float cardW = (ancho - 160) / 4;
-            float cardH = alto - 200;
+            float cardW = (nativoW - 160) / 4;
+            float cardH = nativoH - 200;
 
             for (int i = 0; i < 4; i++) {
                 float cardX = 50 + i * (cardW + 20);
@@ -282,111 +357,130 @@ public class MyMini2DxGame extends BasicGame {
                 g.drawRect(cardX, cardY, cardW, cardH);
 
                 g.setColor(Color.CYAN);
-                g.drawString("[" + (i + 1) + "]", cardX + 15, cardY + 25);
+                g.drawString("[" + (i + 1) + "]", cardX + 15, cardY + 30);
 
                 g.setColor(Color.WHITE);
                 if (i == 0) {
-                    g.drawString("GUERRERO", cardX + 15, cardY + 60);
-                    g.setColor(Color.RED);
-                    g.drawString("Vida: 100", cardX + 15, cardY + 110);
-                    g.setColor(Color.ORANGE);
-                    g.drawString("Fuerza: 15", cardX + 15, cardY + 140);
+                    g.drawString("GUERRERO", cardX + 15, cardY + 70);
+                    g.setColor(Color.RED); g.drawString("Vida: 100", cardX + 15, cardY + 120);
+                    g.setColor(Color.ORANGE); g.drawString("Fuerza: 15", cardX + 15, cardY + 150);
                 } else if (i == 1) {
-                    g.drawString("MAGO", cardX + 15, cardY + 60);
-                    g.setColor(Color.RED);
-                    g.drawString("Vida: 50", cardX + 15, cardY + 110);
-                    g.setColor(Color.ORANGE);
-                    g.drawString("Inteli: 16", cardX + 15, cardY + 140);
+                    g.drawString("MAGO", cardX + 15, cardY + 70);
+                    g.setColor(Color.RED); g.drawString("Vida: 50", cardX + 15, cardY + 120);
+                    g.setColor(Color.ORANGE); g.drawString("Inteli: 16", cardX + 15, cardY + 150);
                 } else if (i == 2) {
-                    g.drawString("NIGROMANTE", cardX + 15, cardY + 60);
-                    g.setColor(Color.RED);
-                    g.drawString("Vida: 70", cardX + 15, cardY + 110);
-                    g.setColor(Color.ORANGE);
-                    g.drawString("Inteli: 14", cardX + 15, cardY + 140);
+                    g.drawString("NIGROMANTE", cardX + 15, cardY + 70);
+                    g.setColor(Color.RED); g.drawString("Vida: 70", cardX + 15, cardY + 120);
+                    g.setColor(Color.ORANGE); g.drawString("Inteli: 14", cardX + 15, cardY + 150);
                 } else {
-                    g.drawString("ASESINO", cardX + 15, cardY + 60);
-                    g.setColor(Color.RED);
-                    g.drawString("Vida: 80", cardX + 15, cardY + 110);
-                    g.setColor(Color.ORANGE);
-                    g.drawString("Destreza: 16", cardX + 15, cardY + 140);
+                    g.drawString("ASESINO", cardX + 15, cardY + 70);
+                    g.setColor(Color.RED); g.drawString("Vida: 80", cardX + 15, cardY + 120);
+                    g.setColor(Color.ORANGE); g.drawString("Destreza: 16", cardX + 15, cardY + 150);
                 }
             }
             return;
         }
 
-        if (mostrandoInventario) {
-            g.drawTexture(texturaBg, 0f, 0f, ancho, alto);
-            g.setColor(new Color(0.04f, 0.04f, 0.06f, 0.94f));
-            g.fillRect(0f, 0f, ancho, alto);
+        // --- HOJA DE PERSONAJE NATIVA (TECLA O) ---
+        if (mostrandoStats) {
+            g.drawTexture(texturaBg, 0f, 0f, nativoW, nativoH);
+            g.setColor(new Color(0.03f, 0.04f, 0.06f, 0.96f));
+            g.fillRect(25, 25, nativoW - 50, nativoH - 50);
+            g.setColor(Color.CYAN);
+            g.drawRect(25, 25, nativoW - 50, nativoH - 50);
 
+            Personaje p = Personaje.getInstancia();
+            String nombreClase = (tipoClase == 1) ? "GUERRERO" : (tipoClase == 2) ? "MAGO" : (tipoClase == 3) ? "NIGROMANTE" : "ASESINO";
+
+            g.setColor(Color.GOLD); g.drawString("HOJA DE PERSONAJE - " + nombreClase, 50, 60);
+            g.setColor(Color.WHITE); g.drawString("Presiona [O] para cerrar menu", nativoW - 280, 60);
+            g.setColor(Color.GRAY); g.drawLineSegment(45, 95, nativoW - 45, 95);
+
+            float col1X = 70;
+            float col2X = Math.max(col1X + 320, nativoW * 0.52f);
+            float filaY = 140;
+            float saltoFila = 45;
+
+            g.setColor(Color.CYAN); g.drawString("=== ATRIBUTOS PRINCIPALES ===", col1X, filaY);
+            g.setColor(Color.WHITE);
+            g.drawString("FUERZA (STR):         " + p.getFuerza() + "   (Carga de Inventario)", col1X, filaY + saltoFila);
+            g.drawString("DESTREZA (DEX):       " + p.getDestreza() + "   (Velocidad y Evasion)", col1X, filaY + (saltoFila * 2));
+            g.drawString("INTELIGENCIA (INT):   " + p.getInteligencia() + "   (Potencia de Hechizos)", col1X, filaY + (saltoFila * 3));
+            g.drawString("CONSTITUCION (CON):   " + p.getConstitucion() + "   (Bonificacion de HP)", col1X, filaY + (saltoFila * 4));
+            g.drawString("SUERTE (LUK):         " + p.getSuerte() + "   (Calidad del Botin)", col1X, filaY + (saltoFila * 5));
+
+            g.setColor(Color.GOLD); g.drawString("=== ESTADO DE COMBATE ===", col2X, filaY);
+            g.setColor(Color.WHITE);
+            g.drawString("DEFENSA TOTAL BASE:   " + p.getDefensaBase() + " Pts", col2X, filaY + saltoFila);
+            g.drawString("SABIDURIA:            " + p.getSabiduria() + " Pts", col2X, filaY + (saltoFila * 2));
+            g.setColor(Color.RED); g.drawString("SALUD ACTUAL:         " + p.getVidaActual() + " / " + p.getVidaMaxima() + " HP", col2X, filaY + (saltoFila * 4));
+            g.setColor(Color.BLUE); g.drawString("MANA MÁXIMO:          " + p.getMana() + " / " + ((p.getInteligencia() * 10) + (p.getSabiduria() * 5)) + " MP", col2X, filaY + (saltoFila * 5));
+            return;
+        }
+
+        // --- INVENTARIO NATIVO (TECLA I) ---
+        if (mostrandoInventario) {
+            g.drawTexture(texturaBg, 0f, 0f, nativoW, nativoH);
+            g.setColor(new Color(0.04f, 0.04f, 0.06f, 0.94f));
+            g.fillRect(25, 25, nativoW - 50, nativoH - 50);
             g.setColor(Color.GOLD);
-            g.drawRect(25, 25, ancho - 50, alto - 50);
+            g.drawRect(25, 25, nativoW - 50, nativoH - 50);
 
             Inventario inv = Inventario.getInstancia(Personaje.getInstancia());
-            g.setColor(Color.CYAN);
-            g.drawString("INVENTARIO DE TU HEROE", 45, 50);
-            g.setColor(Color.WHITE);
-            g.drawString("Carga Actual: " + inv.getPesoActual() + " / " + inv.getCapacidad() + " kg", 45, 75);
-            g.drawString("Menu: [W/S] Navegar | [ENTER] Interactuar | [I] Salir", ancho - 440, 50);
+            g.setColor(Color.CYAN); g.drawString("INVENTARIO DE TU HEROE", 45, 60);
+            g.setColor(Color.WHITE); g.drawString("Carga Actual: " + inv.getPesoActual() + " / " + inv.getCapacidad() + " kg", 45, 85);
+            g.drawString("Menu: [W/S] Navegar | [ENTER] Interactuar | [I] Salir", nativoW - 440, 60);
+            g.setColor(Color.GRAY); g.drawLineSegment(45, 105, nativoW - 45, 105);
 
-            g.setColor(Color.GRAY);
-            g.drawLineSegment(45, 95, ancho - 45, 95);
+            float divisorX = nativoW * 0.53f;
+            g.drawLineSegment(divisorX, 105, divisorX, nativoH - 45);
 
-            float divisorX = ancho * 0.55f;
-            g.drawLineSegment(divisorX, 95, divisorX, alto - 25);
-
-            int itemY = 125;
+            int itemY = 130;
             ArrayList<Objeto> items = new ArrayList<>(inv.getObjetos().keySet());
 
             if (items.isEmpty()) {
-                g.setColor(Color.GRAY);
-                g.drawString("El inventario esta completamente vacio.", 55, itemY);
+                g.setColor(Color.GRAY); g.drawString("El inventario esta completamente vacio.", 55, itemY);
             } else {
                 for (int i = 0; i < items.size(); i++) {
                     Objeto obj = items.get(i);
                     int cant = inv.getObjetos().get(obj);
 
+                    String nombreRender = obj.getNombre().toUpperCase();
+                    layoutTexto.setText(nombreRender);
+
+                    float cajaW = layoutTexto.getWidth() + 30;
+                    float cajaH = layoutTexto.getHeight() + 14;
+
                     if (i == indiceSeleccionado) {
-                        g.setColor(new Color(0.2f, 0.2f, 0.3f, 0.6f));
-                        g.fillRect(45, itemY - 18, divisorX - 60, 26);
+                        g.setColor(new Color(0.15f, 0.25f, 0.4f, 0.7f));
+                        g.fillRect(45, itemY - 6, cajaW, cajaH);
                         g.setColor(Color.CYAN);
-                        g.drawRect(45, itemY - 18, divisorX - 60, 26);
+                        g.drawRect(45, itemY - 6, cajaW, cajaH);
                     }
 
-                    // --- ARREGLADO: Color dinámico según palabras clave de rareza en el JSON ---
                     Color colorItem = Color.WHITE;
                     String nombreMinuscula = obj.getNombre().toLowerCase();
-
-                    if (nombreMinuscula.contains("destino") || nombreMinuscula.contains("celestial")) {
-                        colorItem = Color.ORANGE; // Legendario
-                    } else if (nombreMinuscula.contains("abismo") || nombreMinuscula.contains("sombr") || nombreMinuscula.contains("alma")) {
-                        colorItem = Color.PURPLE; // Épico
-                    } else if (nombreMinuscula.contains("élfic") || nombreMinuscula.contains("rúnic") || nombreMinuscula.contains("plata") || nombreMinuscula.contains("cristal")) {
-                        colorItem = Color.CYAN;   // Raro
-                    } else if (nombreMinuscula.contains("acero") || nombreMinuscula.contains("malla") || nombreMinuscula.contains("placas") || nombreMinuscula.contains("tejo") || nombreMinuscula.contains("ceniza")) {
-                        colorItem = Color.GREEN;  // Poco Común
-                    } else {
-                        colorItem = Color.LIGHT_GRAY; // Común
-                    }
+                    if (nombreMinuscula.contains("destino") || nombreMinuscula.contains("celestial")) colorItem = Color.ORANGE;
+                    else if (nombreMinuscula.contains("abismo") || nombreMinuscula.contains("sombr") || nombreMinuscula.contains("alma")) colorItem = Color.PURPLE;
+                    else if (nombreMinuscula.contains("élfic") || nombreMinuscula.contains("rúnic") || nombreMinuscula.contains("plata") || nombreMinuscula.contains("cristal")) colorItem = Color.CYAN;
+                    else if (nombreMinuscula.contains("acero") || nombreMinuscula.contains("malla") || nombreMinuscula.contains("placas") || nombreMinuscula.contains("tejo") || nombreMinuscula.contains("ceniza")) colorItem = Color.GREEN;
+                    else colorItem = Color.LIGHT_GRAY;
 
                     g.setColor(colorItem);
-                    g.drawString(obj.getNombre().toUpperCase(), 60, itemY);
-
+                    g.drawString(nombreRender, 60, itemY + (cajaH - g.getFont().getLineHeight()) / 2f);
                     g.setColor(Color.GOLD);
-                    g.drawString("x" + cant, divisorX - 75, itemY);
+                    g.drawString("x" + cant, divisorX - 60, itemY + (cajaH - g.getFont().getLineHeight()) / 2f);
 
-                    itemY += 32;
-                    if (itemY > alto - 55) break;
+                    itemY += (cajaH + 12);
+                    if (itemY > nativoH - 65) break;
                 }
             }
 
             if (objetoEnFoco != null) {
                 float panelX = divisorX + 20;
-                float panelY = 120;
+                float panelY = 130;
 
-                g.setColor(Color.CYAN);
-                g.drawString("=== INSPECTOR ===", panelX, panelY);
-
+                g.setColor(Color.CYAN); g.drawString("=== INSPECTOR ===", panelX, panelY);
                 g.setColor(Color.WHITE);
                 g.drawString("Nombre: " + objetoEnFoco.getNombre(), panelX, panelY + 30);
                 g.drawString("Descripcion: " + objetoEnFoco.getOriginalDescripcion(), panelX, panelY + 55);
@@ -413,69 +507,35 @@ public class MyMini2DxGame extends BasicGame {
                     g.drawString("EFECTO: Restaura Recursos", panelX, statsY + 25);
                 }
 
-                g.setColor(Color.GOLD);
-                g.drawRect(panelX, alto - 85, ancho - panelX - 45, 45);
+                g.setColor(Color.GOLD); g.drawRect(panelX, nativoH - 85, nativoW - panelX - 45, 45);
                 g.setColor(Color.WHITE);
                 String accionText = (objetoEnFoco instanceof Pocion) ? "[ENTER] Consumir Pocion" : "[ENTER] Equipar Objeto";
-                g.drawString(accionText, panelX + 20, alto - 60);
+                g.drawString(accionText, panelX + 20, nativoH - 60);
             }
             return;
         }
 
-        g.drawTexture(texturaBg, 0f, 0f, ancho, alto);
+        // --- HUD PRINCIPAL NATIVO ---
+        if (!seleccionandoPersonaje) {
+            Personaje p = Personaje.getInstancia();
+            layoutTexto.setText("PISO " + (pisoActual + 1) + " - " + salaActual.getTipoHabitacion());
+            float boxW = Math.max(220, layoutTexto.getWidth() + 24);
+            float boxH = 85;
 
-        g.setColor(Color.YELLOW);
-        if (salaActual.norte != null) g.fillRect(ancho/2f - SEMIPUERTA, 0, SEMIPUERTA*2, GROSOR_PUERTA);
-        if (salaActual.sur != null) g.fillRect(ancho/2f - SEMIPUERTA, alto - GROSOR_PUERTA, SEMIPUERTA*2, GROSOR_PUERTA);
-        if (salaActual.este != null) g.fillRect(ancho - GROSOR_PUERTA, alto/2f - SEMIPUERTA, GROSOR_PUERTA, SEMIPUERTA*2);
-        if (salaActual.oeste != null) g.fillRect(0, alto/2f - SEMIPUERTA, GROSOR_PUERTA, SEMIPUERTA*2);
+            g.setColor(new Color(0.1f, 0.1f, 0.1f, 0.85f)); g.fillRect(12, 12, boxW, boxH);
+            g.setColor(Color.GOLD); g.drawRect(12, 12, boxW, boxH);
 
-        if (salaActual.getTipoHabitacion() == TipoHabitacion.COMBATE && enemigoVivo) {
-            g.drawSprite(spriteEnemigo, xEnemigo, yEnemigo);
+            g.setColor(Color.WHITE); g.drawString("PISO " + (pisoActual + 1) + " - " + salaActual.getTipoHabitacion(), 24, 23);
+
+            g.setColor(Color.BLACK); g.fillRect(22, 44, boxW - 20, 12);
+            g.setColor(Color.RED);
+            float ratioVida = (float) p.getVidaActual() / p.getVidaMaxima();
+            g.fillRect(22, 44, (boxW - 20) * ratioVida, 12);
+            g.setColor(Color.WHITE); g.drawString("HP: " + p.getVidaActual() + "/" + p.getVidaMaxima(), 26, 45);
+
+            g.setColor(Color.BLACK); g.fillRect(22, 64, boxW - 20, 12);
+            g.setColor(Color.BLUE); g.fillRect(22, 64, boxW - 20, 12);
+            g.setColor(Color.WHITE); g.drawString("MP: " + p.getMana() + "/" + ((p.getInteligencia() * 10) + (p.getSabiduria() * 5)) + " MP", 26, 65);
         }
-
-        if (salaActual.getTipoHabitacion() == TipoHabitacion.COFRE && salaActual.getContenido() != null) {
-            float cx = ancho / 2f - 22f;
-            float cy = alto / 2f - 22f;
-            g.drawSprite(cofre, cx, cy);
-
-            float distCofre = (float) Math.sqrt(Math.pow(xEnano - cx, 2) + Math.pow(yEnano - cy, 2));
-            if (distCofre < 60) {
-                layoutTexto.setText("[E] INTERACTUAR");
-                g.setColor(new Color(0f, 0f, 0f, 0.8f));
-                g.fillRect(ancho / 2f - (layoutTexto.getWidth() / 2f) - 6, cy - 28, layoutTexto.getWidth() + 12, 18);
-                g.setColor(Color.CYAN);
-                g.drawRect(ancho / 2f - (layoutTexto.getWidth() / 2f) - 6, cy - 28, layoutTexto.getWidth() + 12, 18);
-                g.drawString("[E] INTERACTUAR", ancho / 2f - (layoutTexto.getWidth() / 2f), cy - 26);
-            }
-        }
-
-        if (salaActual.tieneEscaleras && spriteEscalera != null) {
-            g.drawSprite(spriteEscalera, xEscalera, yEscalera);
-
-            float distEsc = (float) Math.sqrt(Math.pow(xEnano - xEscalera, 2) + Math.pow(yEnano - yEscalera, 2));
-            if (distEsc < 60) {
-                layoutTexto.setText("[E] SUBIR PISO");
-                g.setColor(new Color(0f, 0f, 0f, 0.8f));
-                g.fillRect(xEscalera + 28f - (layoutTexto.getWidth() / 2f) - 6, yEscalera - 28, layoutTexto.getWidth() + 12, 18);
-                g.setColor(Color.GREEN);
-                g.drawRect(xEscalera + 28f - (layoutTexto.getWidth() / 2f) - 6, yEscalera - 28, layoutTexto.getWidth() + 12, 18);
-                g.drawString("[E] SUBIR PISO", xEscalera + 28f - (layoutTexto.getWidth() / 2f), yEscalera - 26);
-            }
-        }
-
-        g.drawSprite(spriteEnano, xEnano, yEnano);
-
-        layoutTexto.setText("PISO " + (pisoActual + 1) + " - " + salaActual.getTipoHabitacion());
-        float boxW = layoutTexto.getWidth() + 24;
-        float boxH = 36;
-
-        g.setColor(new Color(0.1f, 0.1f, 0.1f, 0.85f));
-        g.fillRect(12, 12, boxW, boxH);
-        g.setColor(Color.GOLD);
-        g.drawRect(12, 12, boxW, boxH);
-
-        g.setColor(Color.WHITE);
-        g.drawString("PISO " + (pisoActual + 1) + " - " + salaActual.getTipoHabitacion(), 24, 23);
     }
 }
