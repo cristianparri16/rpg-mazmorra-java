@@ -40,4 +40,8 @@ public abstract class Objeto {
     public int hashCode() {
         return Integer.hashCode(idObjeto);
     }
+
+    public String getOriginalDescripcion() {
+        return descripcion;
+    }
 }

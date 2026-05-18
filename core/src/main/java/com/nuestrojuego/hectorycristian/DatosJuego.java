@@ -23,7 +23,7 @@ public class DatosJuego {
     }
 
     public void cargar() {
-        String json = Gdx.files.internal("datos.json").readString();
+        String json = Gdx.files.internal("DungeonAssets/Datos.JSON").readString();
         cargarEnemigos(json);
         cargarEspadas(json);
         cargarArcos(json);
@@ -94,16 +94,40 @@ public class DatosJuego {
 
     private int getInt(String bloque, String clave) {
         String buscar = "\"" + clave + "\":";
-        int inicio = bloque.indexOf(buscar) + buscar.length();
+        int inicio = bloque.indexOf(buscar);
+        if (inicio == -1) return 0;
+
+        inicio += buscar.length();
         int fin = inicio;
-        while (fin < bloque.length() && (Character.isDigit(bloque.charAt(fin)) || bloque.charAt(fin) == '-')) fin++;
-        return Integer.parseInt(bloque.substring(inicio, fin).trim());
+
+        while (fin < bloque.length() && (Character.isWhitespace(bloque.charAt(fin)) || bloque.charAt(fin) == ',')) {
+            inicio++;
+            fin++;
+        }
+
+        while (fin < bloque.length() && (Character.isDigit(bloque.charAt(fin)) || bloque.charAt(fin) == '-')) {
+            fin++;
+        }
+
+        String valor = bloque.substring(inicio, fin).trim();
+        if (valor.isEmpty()) return 0;
+
+        return Integer.parseInt(valor);
     }
 
     private String getString(String bloque, String clave) {
-        String buscar = "\"" + clave + "\":\"";
-        int inicio = bloque.indexOf(buscar) + buscar.length();
-        int fin = bloque.indexOf("\"", inicio);
-        return bloque.substring(inicio, fin);
+        String buscar = "\"" + clave + "\":";
+        int inicio = bloque.indexOf(buscar);
+        if (inicio == -1) return "Desconocido";
+
+        inicio += buscar.length();
+
+        int comillaInicio = bloque.indexOf("\"", inicio);
+        if (comillaInicio == -1) return "Desconocido";
+
+        int comillaFin = bloque.indexOf("\"", comillaInicio + 1);
+        if (comillaFin == -1) return "Desconocido";
+
+        return bloque.substring(comillaInicio + 1, comillaFin);
     }
 }
