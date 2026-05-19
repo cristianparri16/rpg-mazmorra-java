@@ -10,7 +10,6 @@ import org.mini2Dx.core.graphics.Sprite;
 import org.mini2Dx.core.font.FontGlyphLayout;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Random;
 
 public class MyMini2DxGame extends BasicGame {
@@ -19,7 +18,6 @@ public class MyMini2DxGame extends BasicGame {
 
     private static final float ANCHO_VIRTUAL = 800f;
     private static final float ALTO_VIRTUAL  = 600f;
-
     private static final float VELOCIDAD     = 180f;
     private static final float VEL_ENEMIGO   = 100f;
     private static final float SEMIPUERTA    = 40f;
@@ -43,7 +41,6 @@ public class MyMini2DxGame extends BasicGame {
     private int pisoActual = 0;
     private Habitacion salaActual;
     private float xEscalera, yEscalera;
-
     private float xEnano, yEnano;
     private final Random random = new Random();
 
@@ -51,19 +48,22 @@ public class MyMini2DxGame extends BasicGame {
     private int indiceSeleccionado = 0;
     private Objeto objetoEnFoco = null;
 
+    private boolean mostrandoCombate = false;
+    private Enemigo enemigoActual = null;
+    private String logAccionJugador = "";
+    private String logAccionEnemigo = "";
+    private boolean turnoDelJugador = true;
+    private float temporizadorTurnoEnemigo = 0f;
+
     @Override
     public void initialise() {
         DatosJuego.getInstancia().cargar();
-
         texDerecha = new Texture(Gdx.files.internal("DungeonAssets/Players/derecha.png"));
         texDerecha.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
         texArriba  = new Texture(Gdx.files.internal("DungeonAssets/Players/arriba.png"));
         texArriba.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
         texAbajo   = new Texture(Gdx.files.internal("DungeonAssets/Players/abajo.png"));
         texAbajo.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
         spriteEnano = new Sprite(texAbajo);
 
         texturaBg = new Texture(Gdx.files.internal("DungeonAssets/BackgroundTexture.jpg"));
@@ -103,19 +103,15 @@ public class MyMini2DxGame extends BasicGame {
         if (dungeon == null) {
             dungeon = new GeneradorMazmorra(System.currentTimeMillis());
         }
-
         if (pisoActual >= 31) {
             Gdx.app.exit();
             return;
         }
-
         salaActual = dungeon.getEntradasPisos().get(pisoActual);
         xEnano = ANCHO_VIRTUAL / 2f;
         yEnano = ALTO_VIRTUAL / 2f;
-
         xEscalera = 120f + random.nextFloat() * (ANCHO_VIRTUAL - 64f - 240f);
         yEscalera = 120f + random.nextFloat() * (ALTO_VIRTUAL - 64f - 240f);
-
         colocarEnemigo();
     }
 
@@ -136,6 +132,11 @@ public class MyMini2DxGame extends BasicGame {
             return;
         }
 
+        if (mostrandoCombate) {
+            procesarTurnosCombate();
+            return;
+        }
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
             mostrandoInventario = !mostrandoInventario;
             mostrandoStats = false;
@@ -149,7 +150,8 @@ public class MyMini2DxGame extends BasicGame {
         }
 
         if (mostrandoInventario) {
-            Inventario inv = Inventario.getInstancia(Personaje.getInstancia());
+            Personaje p = Personaje.getInstancia();
+            Inventario inv = Inventario.getInstancia(p);
             ArrayList<Objeto> items = new ArrayList<>(inv.getObjetos().keySet());
 
             if (!items.isEmpty()) {
@@ -162,10 +164,25 @@ public class MyMini2DxGame extends BasicGame {
                 objetoEnFoco = items.get(indiceSeleccionado);
 
                 if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-                    if (objetoEnFoco instanceof Arma || objetoEnFoco instanceof Armadura) {
-                        System.out.println("¡Te has equipado: " + objetoEnFoco.getNombre() + "!");
+                    if (objetoEnFoco instanceof Arma) {
+                        p.equiparArma((Arma) objetoEnFoco);
+                        if (enemigoActual != null && enemigoActual.estaVivo()) {
+                            mostrandoInventario = false;
+                            mostrandoCombate = true;
+                            logAccionJugador = "Equipado: " + objetoEnFoco.getNombre();
+                        }
+                    } else if (objetoEnFoco instanceof Armadura) {
+                        if (p.getFuerza() >= ((Armadura) objetoEnFoco).getFuerzaMinima()) {
+                            p.equiparArmadura((Armadura) objetoEnFoco);
+                            if (enemigoActual != null && enemigoActual.estaVivo()) {
+                                mostrandoInventario = false;
+                                mostrandoCombate = true;
+                                logAccionJugador = "Equipado: " + objetoEnFoco.getNombre();
+                            }
+                        }
                     } else if (objetoEnFoco instanceof Pocion) {
-                        System.out.println("¡Has consumido la pocion!");
+                        Pocion poc = (Pocion) objetoEnFoco;
+                        p.curar(poc.getCuracion());
                         inv.eliminarObjeto(objetoEnFoco, 1);
                         indiceSeleccionado = 0;
                         objetoEnFoco = null;
@@ -218,7 +235,15 @@ public class MyMini2DxGame extends BasicGame {
             else yEnemigo += Math.signum(diffY) * VEL_ENEMIGO * delta;
 
             if (xEnano < xEnemigo + 64 && xEnano + sw > xEnemigo && yEnano < yEnemigo + 64 && yEnano + sh > yEnemigo) {
-                enemigoVivo = false;
+                if (salaActual.getContenido() instanceof Enemigo) {
+                    enemigoActual = (Enemigo) salaActual.getContenido();
+                } else {
+                    enemigoActual = new Enemigo(5 + (pisoActual * 2), pisoActual, "Esqueleto Errante", 40 + (pisoActual * 10), pisoActual);
+                }
+                mostrandoCombate = true;
+                logAccionJugador = "¡Un salvaje " + enemigoActual.getNombre() + " corta tu avance!";
+                logAccionEnemigo = "¿Qué vas a hacer?";
+                turnoDelJugador = true;
             }
         }
 
@@ -231,9 +256,7 @@ public class MyMini2DxGame extends BasicGame {
                     if (mapaCofre.getObjeto() != null) {
                         Inventario inv = Inventario.getInstancia(Personaje.getInstancia());
                         boolean exito = inv.añadirObjeto(mapaCofre.getObjeto(), 1);
-                        if (exito) {
-                            salaActual.setContenido(null);
-                        }
+                        if (exito) salaActual.setContenido(null);
                     }
                 }
             }
@@ -260,6 +283,93 @@ public class MyMini2DxGame extends BasicGame {
         }
     }
 
+    private void procesarTurnosCombate() {
+        Personaje p = Personaje.getInstancia();
+        Inventario inv = Inventario.getInstancia(p);
+
+        if (!turnoDelJugador) {
+            temporizadorTurnoEnemigo += Gdx.graphics.getDeltaTime();
+            if (temporizadorTurnoEnemigo >= 0.9f) {
+                int vidaAntes = p.getVidaActual();
+                p.recibirDaño(enemigoActual.getDañoTotal(), p.getDefensaTotal());
+                logAccionEnemigo = "¡El enemigo te causa " + (vidaAntes - p.getVidaActual()) + " de daño!";
+                if (!p.estaVivo()) Gdx.app.exit();
+                turnoDelJugador = true;
+                temporizadorTurnoEnemigo = 0f;
+            }
+            return;
+        }
+
+        int clickX = Gdx.input.getX();
+        int clickY = Gdx.input.getY();
+        boolean click = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
+
+        if (click) {
+            int opcionPulsada = -1;
+            float btnX = Gdx.graphics.getWidth() / 2f + 40;
+            float baseBtnY = 275 + 40;
+
+            for (int i = 0; i < 3; i++) {
+                float bY = baseBtnY + (i * 50) - 20;
+                if (clickX >= btnX && clickX <= btnX + 270 && clickY >= bY && clickY <= bY + 35) {
+                    opcionPulsada = i;
+                    break;
+                }
+            }
+
+            if (opcionPulsada == 0) {
+                Arma arma = p.getArmaEquipada();
+                int dmg = 0;
+                if (arma == null) {
+                    dmg = p.getDañoFisico();
+                    logAccionJugador = "Golpeas con tus puños.";
+                } else if (arma instanceof ArmaADistancia) {
+                    Flechas f = null;
+                    for (Objeto o : inv.getObjetos().keySet()) if (o instanceof Flechas) { f = (Flechas) o; break; }
+                    if (f == null) { logAccionJugador = "¡No tienes flechas!"; return; }
+                    inv.eliminarObjeto(f, 1);
+                    dmg = p.getDañoDistancia() + arma.getDañoArma() + f.getDañoFlecha();
+                    logAccionJugador = "Disparas una flecha.";
+                } else if (arma instanceof Baston) {
+                    if (p.getMana() < 10) { logAccionJugador = "¡Sin Maná!"; return; }
+                    p.gastarMana(10);
+                    dmg = p.getDañoMagico() + ((Baston) arma).getDañoMagico();
+                    logAccionJugador = "Lanzas un hechizo.";
+                } else {
+                    dmg = p.getDañoFisico() + arma.getDañoArma();
+                    logAccionJugador = "Atacas con tu " + arma.getNombre() + ".";
+                }
+
+                int vAntes = enemigoActual.getVidaActual();
+                enemigoActual.recibirDaño(dmg, enemigoActual.getDefensaTotal());
+                logAccionJugador += " Infliges " + (vAntes - enemigoActual.getVidaActual()) + " de daño.";
+
+                if (!enemigoActual.estaVivo()) {
+                    p.ganarExperiencia(enemigoActual.getVidaMaxima() / 2);
+                    enemigoVivo = false;
+                    mostrandoCombate = false;
+                    salaActual.setContenido(null);
+                } else {
+                    turnoDelJugador = false;
+                    logAccionEnemigo = "El enemigo contraataca...";
+                }
+            } else if (opcionPulsada == 1) {
+                mostrandoInventario = true;
+                mostrandoCombate = false;
+            } else if (opcionPulsada == 2) {
+                Pocion poc = null;
+                for (Objeto o : inv.getObjetos().keySet()) if (o instanceof Pocion) { poc = (Pocion) o; break; }
+                if (poc == null) { logAccionJugador = "¡No tienes pociones!"; return; }
+                int vPrev = p.getVidaActual();
+                p.curar(poc.getCuracion());
+                inv.eliminarObjeto(poc, 1);
+                logAccionJugador = "Sanas " + (p.getVidaActual() - vPrev) + " HP.";
+                turnoDelJugador = false;
+                logAccionEnemigo = "¡Te golpean mientras bebes!";
+            }
+        }
+    }
+
     @Override
     public void interpolate(float alpha) {}
 
@@ -268,43 +378,30 @@ public class MyMini2DxGame extends BasicGame {
         float nativoW = g.getWindowWidth();
         float nativoH = g.getWindowHeight();
 
-        if (layoutTexto == null) {
-            layoutTexto = g.getFont().newGlyphLayout();
-        }
+        if (layoutTexto == null) layoutTexto = g.getFont().newGlyphLayout();
 
-        // === ESCALADO INTERNO 1: RENDER DE LA MAZMORRA (MUNDO DE JUEGO) ===
         g.scale(nativoW / ANCHO_VIRTUAL, nativoH / ALTO_VIRTUAL);
 
-        if (!seleccionandoPersonaje && !mostrandoStats && !mostrandoInventario) {
+        if (!seleccionandoPersonaje && !mostrandoStats && !mostrandoInventario && !mostrandoCombate) {
             g.drawTexture(texturaBg, 0f, 0f, ANCHO_VIRTUAL, ALTO_VIRTUAL);
-
             g.setColor(Color.YELLOW);
             if (salaActual.norte != null) g.fillRect(ANCHO_VIRTUAL/2f - SEMIPUERTA, 0, SEMIPUERTA*2, GROSOR_PUERTA);
             if (salaActual.sur != null) g.fillRect(ANCHO_VIRTUAL/2f - SEMIPUERTA, ALTO_VIRTUAL - GROSOR_PUERTA, SEMIPUERTA*2, GROSOR_PUERTA);
             if (salaActual.este != null) g.fillRect(ANCHO_VIRTUAL - GROSOR_PUERTA, ALTO_VIRTUAL/2f - SEMIPUERTA, GROSOR_PUERTA, SEMIPUERTA*2);
             if (salaActual.oeste != null) g.fillRect(0, ALTO_VIRTUAL/2f - SEMIPUERTA, GROSOR_PUERTA, SEMIPUERTA*2);
 
-            if (salaActual.getTipoHabitacion() == TipoHabitacion.COMBATE && enemigoVivo) {
-                g.drawSprite(spriteEnemigo, xEnemigo, yEnemigo);
-            }
-            if (salaActual.getTipoHabitacion() == TipoHabitacion.COFRE && salaActual.getContenido() != null) {
-                g.drawSprite(cofre, ANCHO_VIRTUAL / 2f - 22f, ALTO_VIRTUAL / 2f - 22f);
-            }
-
-            // --- ARREGLADO: El sprite de la escalera se dibuja aquí en coordenadas virtuales ---
-            if (salaActual.tieneEscaleras && spriteEscalera != null) {
-                g.drawSprite(spriteEscalera, xEscalera, yEscalera);
-            }
+            if (salaActual.getTipoHabitacion() == TipoHabitacion.COMBATE && enemigoVivo) g.drawSprite(spriteEnemigo, xEnemigo, yEnemigo);
+            if (salaActual.getTipoHabitacion() == TipoHabitacion.COFRE && salaActual.getContenido() != null) g.drawSprite(cofre, ANCHO_VIRTUAL / 2f - 22f, ALTO_VIRTUAL / 2f - 22f);
+            if (salaActual.tieneEscaleras && spriteEscalera != null) g.drawSprite(spriteEscalera, xEscalera, yEscalera);
             g.drawSprite(spriteEnano, xEnano, yEnano);
         }
 
-        // === ESCALADO INTERNO 2: RESTAURAMOS RESOLUCIÓN NATIVA PARA MENÚS 1:1 SÚPER NÍTIDOS ===
         g.scale(ANCHO_VIRTUAL / nativoW, ALTO_VIRTUAL / nativoH);
 
         float ratioX = nativoW / ANCHO_VIRTUAL;
         float ratioY = nativoH / ALTO_VIRTUAL;
 
-        if (!seleccionandoPersonaje && !mostrandoStats && !mostrandoInventario) {
+        if (!seleccionandoPersonaje && !mostrandoStats && !mostrandoInventario && !mostrandoCombate) {
             if (salaActual.getTipoHabitacion() == TipoHabitacion.COFRE && salaActual.getContenido() != null) {
                 float distCofre = (float) Math.sqrt(Math.pow(xEnano - (ANCHO_VIRTUAL / 2f - 22f), 2) + Math.pow(yEnano - (ALTO_VIRTUAL / 2f - 22f), 2));
                 if (distCofre < 60) {
@@ -332,12 +429,10 @@ public class MyMini2DxGame extends BasicGame {
             }
         }
 
-        // --- MENU SELECCION DE PERSONAJE NATIVO PROPORCIONAL ---
         if (seleccionandoPersonaje) {
             g.drawTexture(texturaBg, 0f, 0f, nativoW, nativoH);
             g.setColor(new Color(0f, 0f, 0f, 0.75f));
             g.fillRect(0f, 0f, nativoW, nativoH);
-
             g.setColor(Color.DARK_GRAY);
             g.fillRect(50, 40, nativoW - 100, 60);
             g.setColor(Color.GOLD);
@@ -350,15 +445,12 @@ public class MyMini2DxGame extends BasicGame {
             for (int i = 0; i < 4; i++) {
                 float cardX = 50 + i * (cardW + 20);
                 float cardY = 130;
-
                 g.setColor(new Color(0.1f, 0.1f, 0.15f, 0.9f));
                 g.fillRect(cardX, cardY, cardW, cardH);
                 g.setColor(Color.GRAY);
                 g.drawRect(cardX, cardY, cardW, cardH);
-
                 g.setColor(Color.CYAN);
                 g.drawString("[" + (i + 1) + "]", cardX + 15, cardY + 30);
-
                 g.setColor(Color.WHITE);
                 if (i == 0) {
                     g.drawString("GUERRERO", cardX + 15, cardY + 70);
@@ -381,7 +473,6 @@ public class MyMini2DxGame extends BasicGame {
             return;
         }
 
-        // --- HOJA DE PERSONAJE NATIVA (TECLA O) ---
         if (mostrandoStats) {
             g.drawTexture(texturaBg, 0f, 0f, nativoW, nativoH);
             g.setColor(new Color(0.03f, 0.04f, 0.06f, 0.96f));
@@ -412,7 +503,7 @@ public class MyMini2DxGame extends BasicGame {
             g.setColor(Color.GOLD); g.drawString("=== ESTADO DE COMBATE ===", col2X, filaY);
             g.setColor(Color.WHITE);
             g.drawString("DEFENSA TOTAL BASE:   " + p.getDefensaBase() + " Pts", col2X, filaY + saltoFila);
-            g.drawString("SABIDURIA:            " + p.getSabiduria() + " Pts", col2X, filaY + (saltoFila * 2));
+            g.drawString("DEFENSA TOTAL ACTUAL: " + p.getDefensaTotal() + " Pts", col2X, filaY + (saltoFila * 2));
             g.setColor(Color.RED); g.drawString("SALUD ACTUAL:         " + p.getVidaActual() + " / " + p.getVidaMaxima() + " HP", col2X, filaY + (saltoFila * 4));
             g.setColor(Color.BLUE); g.drawString("MANA MÁXIMO:          " + p.getMana() + " / " + ((p.getInteligencia() * 10) + (p.getSabiduria() * 5)) + " MP", col2X, filaY + (saltoFila * 5));
             return;
@@ -443,10 +534,8 @@ public class MyMini2DxGame extends BasicGame {
                 for (int i = 0; i < items.size(); i++) {
                     Objeto obj = items.get(i);
                     int cant = inv.getObjetos().get(obj);
-
                     String nombreRender = obj.getNombre().toUpperCase();
                     layoutTexto.setText(nombreRender);
-
                     float cajaW = layoutTexto.getWidth() + 30;
                     float cajaH = layoutTexto.getHeight() + 14;
 
@@ -458,18 +547,17 @@ public class MyMini2DxGame extends BasicGame {
                     }
 
                     Color colorItem = Color.WHITE;
-                    String nombreMinuscula = obj.getNombre().toLowerCase();
-                    if (nombreMinuscula.contains("destino") || nombreMinuscula.contains("celestial")) colorItem = Color.ORANGE;
-                    else if (nombreMinuscula.contains("abismo") || nombreMinuscula.contains("sombr") || nombreMinuscula.contains("alma")) colorItem = Color.PURPLE;
-                    else if (nombreMinuscula.contains("élfic") || nombreMinuscula.contains("rúnic") || nombreMinuscula.contains("plata") || nombreMinuscula.contains("cristal")) colorItem = Color.CYAN;
-                    else if (nombreMinuscula.contains("acero") || nombreMinuscula.contains("malla") || nombreMinuscula.contains("placas") || nombreMinuscula.contains("tejo") || nombreMinuscula.contains("ceniza")) colorItem = Color.GREEN;
+                    String nm = obj.getNombre().toLowerCase();
+                    if (nm.contains("destino") || nm.contains("celestial")) colorItem = Color.ORANGE;
+                    else if (nm.contains("abismo") || nm.contains("sombr") || nm.contains("alma")) colorItem = Color.PURPLE;
+                    else if (nm.contains("élfic") || nm.contains("rúnic") || nm.contains("plata")) colorItem = Color.CYAN;
+                    else if (nm.contains("acero") || nm.contains("malla")) colorItem = Color.GREEN;
                     else colorItem = Color.LIGHT_GRAY;
 
                     g.setColor(colorItem);
                     g.drawString(nombreRender, 60, itemY + (cajaH - g.getFont().getLineHeight()) / 2f);
                     g.setColor(Color.GOLD);
                     g.drawString("x" + cant, divisorX - 60, itemY + (cajaH - g.getFont().getLineHeight()) / 2f);
-
                     itemY += (cajaH + 12);
                     if (itemY > nativoH - 65) break;
                 }
@@ -478,13 +566,11 @@ public class MyMini2DxGame extends BasicGame {
             if (objetoEnFoco != null) {
                 float panelX = divisorX + 20;
                 float panelY = 130;
-
                 g.setColor(Color.CYAN); g.drawString("=== INSPECTOR ===", panelX, panelY);
                 g.setColor(Color.WHITE);
                 g.drawString("Nombre: " + objetoEnFoco.getNombre(), panelX, panelY + 30);
                 g.drawString("Descripcion: " + objetoEnFoco.getOriginalDescripcion(), panelX, panelY + 55);
                 g.drawString("Peso Unitario: " + objetoEnFoco.getPeso() + " kg", panelX, panelY + 80);
-
                 g.setColor(Color.GOLD);
                 float statsY = panelY + 115;
                 if (objetoEnFoco instanceof Espada) {
@@ -505,11 +591,75 @@ public class MyMini2DxGame extends BasicGame {
                     g.drawString("TIPO: Consumible", panelX, statsY);
                     g.drawString("EFECTO: Restaura Recursos", panelX, statsY + 25);
                 }
-
                 g.setColor(Color.GOLD); g.drawRect(panelX, nativoH - 85, nativoW - panelX - 45, 45);
                 g.setColor(Color.WHITE);
                 String accionText = (objetoEnFoco instanceof Pocion) ? "[ENTER] Consumir Pocion" : "[ENTER] Equipar Objeto";
                 g.drawString(accionText, panelX + 20, nativoH - 60);
+            }
+            return;
+        }
+
+        if (mostrandoCombate && enemigoActual != null) {
+            Personaje p = Personaje.getInstancia();
+            int mX = Gdx.input.getX();
+            int mY = Gdx.input.getY();
+
+            g.drawTexture(texturaBg, 0f, 0f, nativoW, nativoH);
+            g.setColor(new Color(0.04f, 0.04f, 0.07f, 0.96f));
+            g.fillRect(35, 35, nativoW - 70, nativoH - 70);
+            g.setColor(Color.CYAN);
+            g.drawRect(35, 35, nativoW - 70, nativoH - 70);
+
+            g.setColor(Color.RED);
+            g.drawString("ENEMIGO: " + enemigoActual.getNombre().toUpperCase(), 65, 70);
+            g.setColor(Color.BLACK);
+            g.fillRect(65, 95, nativoW - 130, 20);
+            g.setColor(new Color(0.8f, 0.1f, 0.1f, 1f));
+            float pctVidaEnemigo = (float) enemigoActual.getVidaActual() / enemigoActual.getVidaMaxima();
+            g.fillRect(65, 95, (nativoW - 130) * pctVidaEnemigo, 20);
+            g.setColor(Color.RED);
+            g.drawRect(65, 95, nativoW - 130, 20);
+            g.setColor(Color.WHITE);
+            g.drawString(enemigoActual.getVidaActual() + " / " + enemigoActual.getVidaMaxima() + " HP", 80, 98);
+
+            g.setColor(new Color(0.08f, 0.09f, 0.15f, 0.9f));
+            g.fillRect(65, 140, nativoW - 130, 90);
+            g.setColor(Color.DARK_GRAY);
+            g.drawRect(65, 140, nativoW - 130, 90);
+            g.setColor(Color.GOLD);
+            g.drawString(logAccionJugador, 85, 160);
+            g.setColor(Color.PINK);
+            g.drawString(logAccionEnemigo, 85, 195);
+
+            float baseControlY = 275;
+            g.setColor(Color.GREEN);
+            g.drawString("TU ESTADO:", 65, baseControlY);
+            g.setColor(Color.WHITE);
+            g.drawString("Héroe: " + p.getNombre(), 65, baseControlY + 35);
+            g.drawString("Arma: " + (p.getArmaEquipada() != null ? p.getArmaEquipada().getNombre() : "Puños"), 65, baseControlY + 65);
+            g.drawString("Escudo Total: " + p.getDefensaTotal() + " Pts", 65, baseControlY + 95);
+            g.drawString("Vitalidad: " + p.getVidaActual() + "/" + p.getVidaMaxima() + " HP | " + p.getMana() + " MP", 65, baseControlY + 125);
+
+            float btnX = nativoW / 2f + 40;
+            float baseBtnY = baseControlY + 40;
+            String[] labels = {"ATACAR CON ARMA", "ABRIR MOCHILA", "TOMAR ELIXIR"};
+
+            for (int i = 0; i < 3; i++) {
+                float bY = baseBtnY + (i * 50);
+                boolean hover = (mX >= btnX && mX <= btnX + 270 && mY >= bY - 20 && mY <= bY + 15);
+
+                if (hover) {
+                    g.setColor(new Color(0.1f, 0.4f, 0.4f, 0.8f));
+                    g.fillRect(btnX, bY - 20, 270, 35);
+                    g.setColor(Color.CYAN);
+                } else {
+                    g.setColor(new Color(0.1f, 0.12f, 0.2f, 0.9f));
+                    g.fillRect(btnX, bY - 20, 270, 35);
+                    g.setColor(Color.DARK_GRAY);
+                }
+                g.drawRect(btnX, bY - 20, 270, 35);
+                g.setColor(Color.WHITE);
+                g.drawString(labels[i], btnX + 25, bY + 4);
             }
             return;
         }
@@ -522,7 +672,6 @@ public class MyMini2DxGame extends BasicGame {
 
             g.setColor(new Color(0.1f, 0.1f, 0.1f, 0.85f)); g.fillRect(12, 12, boxW, boxH);
             g.setColor(Color.GOLD); g.drawRect(12, 12, boxW, boxH);
-
             g.setColor(Color.WHITE); g.drawString("PISO " + (pisoActual + 1) + " - " + salaActual.getTipoHabitacion(), 24, 23);
 
             g.setColor(Color.BLACK); g.fillRect(22, 44, boxW - 20, 12);
@@ -532,8 +681,11 @@ public class MyMini2DxGame extends BasicGame {
             g.setColor(Color.WHITE); g.drawString("HP: " + p.getVidaActual() + "/" + p.getVidaMaxima(), 26, 45);
 
             g.setColor(Color.BLACK); g.fillRect(22, 64, boxW - 20, 12);
-            g.setColor(Color.BLUE); g.fillRect(22, 64, boxW - 20, 12);
-            g.setColor(Color.WHITE); g.drawString("MP: " + p.getMana() + "/" + ((p.getInteligencia() * 10) + (p.getSabiduria() * 5)) + " MP", 26, 65);
+            g.setColor(Color.BLUE);
+            float maxMana = (p.getInteligencia() * 10) + (p.getSabiduria() * 5);
+            float ratioMana = maxMana > 0 ? (float) p.getMana() / maxMana : 0f;
+            g.fillRect(22, 64, (boxW - 20) * ratioMana, 12);
+            g.setColor(Color.WHITE); g.drawString("MP: " + p.getMana() + "/" + (int)maxMana + " MP", 26, 65);
         }
     }
-}.
+}

@@ -146,6 +146,10 @@ public class Personaje extends Entidad {
             return false;
         }
     }
+    public void curar(int cantidad) {
+        this.vidaActual = Math.min(this.vidaMaxima, this.vidaActual + cantidad);
+    }
+
 
     public void setArmaEquipada(Arma armaEquipada) {
         this.armaEquipada = armaEquipada;
