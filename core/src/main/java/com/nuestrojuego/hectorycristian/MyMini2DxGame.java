@@ -536,4 +536,4 @@ public class MyMini2DxGame extends BasicGame {
             g.setColor(Color.WHITE); g.drawString("MP: " + p.getMana() + "/" + ((p.getInteligencia() * 10) + (p.getSabiduria() * 5)) + " MP", 26, 65);
         }
     }
-}
+}.
