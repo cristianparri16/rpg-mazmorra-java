@@ -418,7 +418,6 @@ public class MyMini2DxGame extends BasicGame {
             return;
         }
 
-        // --- INVENTARIO NATIVO (TECLA I) ---
         if (mostrandoInventario) {
             g.drawTexture(texturaBg, 0f, 0f, nativoW, nativoH);
             g.setColor(new Color(0.04f, 0.04f, 0.06f, 0.94f));
@@ -515,7 +514,6 @@ public class MyMini2DxGame extends BasicGame {
             return;
         }
 
-        // --- HUD PRINCIPAL NATIVO ---
         if (!seleccionandoPersonaje) {
             Personaje p = Personaje.getInstancia();
             layoutTexto.setText("PISO " + (pisoActual + 1) + " - " + salaActual.getTipoHabitacion());

@@ -2,6 +2,8 @@ package com.nuestrojuego.hectorycristian;
 
 public class Personaje extends Entidad {
     private Arma armaEquipada;
+    private Armadura armaduraEquipada;
+    private int defensaArmadura;
     private int vidaBase;
     private int fuerza;
     private int destreza;
@@ -63,6 +65,14 @@ public class Personaje extends Entidad {
         this.evasion = this.destreza * 0.01;
         this.defensaExtra = (int) Math.floor(this.constitucion/5);
         this.dañoDistancia = this.destreza *2;
+        if (this.armaduraEquipada != null) {
+            this.defensaArmadura = armaduraEquipada.getArmadura();
+        } else {
+             this.defensaArmadura= 0;
+        }
+
+        this.defensaTotal = this.defensaBase + this.defensaExtra + this.defensaArmadura;
+
 
     }
 
@@ -126,6 +136,101 @@ public class Personaje extends Entidad {
         this.puntosAtributo += 3;
 
     }
+
+    public boolean equiparArmadura(Armadura armadura) {
+        if (this.fuerza >= armadura.getFuerzaMinima()){
+            this.armaduraEquipada = armadura;
+            recalcularStats();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void setArmaEquipada(Arma armaEquipada) {
+        this.armaEquipada = armaEquipada;
+    }
+
+    public Armadura getArmaduraEquipada() {
+        return armaduraEquipada;
+    }
+
+    public void setArmaduraEquipada(Armadura armaduraEquipada) {
+        this.armaduraEquipada = armaduraEquipada;
+    }
+
+    public int getDefensaArmadura() {
+        return defensaArmadura;
+    }
+
+    public void setDefensaArmadura(int defensaArmadura) {
+        this.defensaArmadura = defensaArmadura;
+    }
+
+    public int getVidaBase() {
+        return vidaBase;
+    }
+
+    public void setDefensaTotal(int defensaTotal) {
+        this.defensaTotal = defensaTotal;
+    }
+
+    public void setDañoFisico(int dañoFisico) {
+        this.dañoFisico = dañoFisico;
+    }
+
+    public void setDañoMagico(int dañoMagico) {
+        this.dañoMagico = dañoMagico;
+    }
+
+    public void setMana(int mana) {
+        this.mana = mana;
+    }
+
+    public void setEvasion(double evasion) {
+        this.evasion = evasion;
+    }
+
+    public int getDefensaExtra() {
+        return defensaExtra;
+    }
+
+    public void setDefensaExtra(int defensaExtra) {
+        this.defensaExtra = defensaExtra;
+    }
+
+    public void setDañoDistancia(int dañoDistancia) {
+        this.dañoDistancia = dañoDistancia;
+    }
+
+    public int getNivel() {
+        return nivel;
+    }
+
+    public void setNivel(int nivel) {
+        this.nivel = nivel;
+    }
+
+    public int getExperiencia() {
+        return experiencia;
+    }
+
+    public void setExperiencia(int experiencia) {
+        this.experiencia = experiencia;
+    }
+
+    public int getPuntosAtributo() {
+        return puntosAtributo;
+    }
+
+    public void setPuntosAtributo(int puntosAtributo) {
+        this.puntosAtributo = puntosAtributo;
+    }
+
+    public static void setInstancia(Personaje instancia) {
+        Personaje.instancia = instancia;
+    }
+
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
