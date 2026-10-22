@@ -1,5 +1,6 @@
 Proyecto desarrollado para segundo de DAM (Desarrollo de Aplicaciones Multiplataforma). Es un juego RPG de mazmorras en 2D con mapas generados de forma aleatoria, sistema de combate por turnos y gestión de inventario.
 
+
 ## Características del juego
 
 * **Generación procedural:** Los pisos y las salas cambian de forma aleatoria en cada partida mediante una semilla.
