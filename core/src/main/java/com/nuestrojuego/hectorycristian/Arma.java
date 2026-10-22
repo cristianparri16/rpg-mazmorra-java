@@ -6,6 +6,7 @@ package com.nuestrojuego.hectorycristian;
 public abstract class Arma extends Objeto {
     private int dañoArma;
 
+
     /**
      * Instancia un arma nueva con su daño especifico y atributos de objeto.
      *
